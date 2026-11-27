@@ -1,41 +1,44 @@
-# Ansible Infrastructure Provisioning Lab
+<div align="center">
 
-[![CI](https://github.com/Mian-Basam/ansible-infra-provisioning/actions/workflows/ci.yml/badge.svg)](https://github.com/Mian-Basam/ansible-infra-provisioning/actions)
-![Ansible](https://img.shields.io/badge/Ansible-2.15+-EE0000?logo=ansible&logoColor=white)
-![Vagrant](https://img.shields.io/badge/Vagrant-VirtualBox-1868F2?logo=vagrant&logoColor=white)
-![ansible-lint](https://img.shields.io/badge/ansible--lint-production%20profile-success)
-![Level](https://img.shields.io/badge/level-intermediate-orange)
+# Ansible Infrastructure Provisioning
 
-> **Infrastructure as Code** for a small on-premises web tier: one Nginx
-> load balancer and two application servers, built as **VirtualBox VMs
-> with Vagrant** and configured entirely by **Ansible**, including
-> **zero-downtime rolling updates** and controlled OS patching.
->
-> **Portfolio level 3 of 5**: configuration management and virtualization.
+### Hardened servers, load balancing and zero-downtime rolling updates as code
 
----
+[![CI](https://img.shields.io/github/actions/workflow/status/Mian-Basam/ansible-infra-provisioning/ci.yml?branch=main&style=for-the-badge&logo=githubactions&logoColor=white&label=CI)](https://github.com/Mian-Basam/ansible-infra-provisioning/actions)
+![Ansible](https://img.shields.io/badge/Ansible-2.15%2B-EE0000?style=for-the-badge&logo=ansible&logoColor=white)
+![Vagrant](https://img.shields.io/badge/Vagrant-VirtualBox-1868F2?style=for-the-badge&logo=vagrant&logoColor=white)
+![Level](https://img.shields.io/badge/Level-Intermediate-F97316?style=for-the-badge)
 
-## Table of contents
+<p><b>Infrastructure as Code</b> for a small on-premises web tier: one Nginx load balancer and two application servers, built as <b>VirtualBox VMs with Vagrant</b> and configured entirely by <b>Ansible</b>, including <b>zero-downtime rolling updates</b> and controlled OS patching.  <b>Portfolio level 3 of 5</b>: configuration management and virtualization.</p>
 
-1. [Introduction](#1-introduction)
-2. [Purpose of the project](#2-purpose-of-the-project)
-3. [Architecture](#3-architecture)
-4. [What gets configured](#4-what-gets-configured)
-5. [Tools and technologies](#5-tools-and-technologies)
-6. [File structure](#6-file-structure)
-7. [How to run: `run.sh`](#7-how-to-run-runsh)
-8. [Quick start](#8-quick-start)
-9. [Playbooks](#9-playbooks)
-10. [Zero-downtime rolling update](#10-zero-downtime-rolling-update)
-11. [Testing and CI](#11-testing-and-ci)
-12. [Bugs found by the tests](#12-bugs-found-by-the-tests)
-13. [Skills demonstrated](#13-skills-demonstrated)
-14. [Roadmap](#14-roadmap)
-15. [Further documentation](#15-further-documentation)
+[**Quick Start**](#how-to-run-runsh) &nbsp;•&nbsp; [**Architecture**](#architecture) &nbsp;•&nbsp; [**Tech Stack**](#tools-and-technologies) &nbsp;•&nbsp; [**Structure**](#file-structure) &nbsp;•&nbsp; [**Testing**](#testing-and-ci)
+
+</div>
 
 ---
 
-## 1. Introduction
+<details>
+<summary><b>Table of contents</b></summary>
+
+- [Introduction](#introduction)
+- [Purpose of the project](#purpose-of-the-project)
+- [Architecture](#architecture)
+- [What gets configured](#what-gets-configured)
+- [Tools and technologies](#tools-and-technologies)
+- [File structure](#file-structure)
+- [How to run: run.sh](#how-to-run-runsh)
+- [Quick start](#quick-start)
+- [Playbooks](#playbooks)
+- [Zero-downtime rolling update](#zero-downtime-rolling-update)
+- [Testing and CI](#testing-and-ci)
+- [Bugs found by the tests](#bugs-found-by-the-tests)
+- [Skills demonstrated](#skills-demonstrated)
+- [Roadmap](#roadmap)
+- [Further documentation](#further-documentation)
+
+</details>
+
+## Introduction
 
 This project builds a miniature data-center segment on your laptop and
 manages it entirely with code:
@@ -54,7 +57,7 @@ the application and the load balancer. Nothing is configured by hand.
 The same playbooks also work against an example **production inventory**;
 only the inventory and its variables change, not the code.
 
-## 2. Purpose of the project
+## Purpose of the project
 
 **Problem it solves.** Configuring servers by hand over SSH does not
 scale: every server ends up slightly different ("configuration drift"),
@@ -81,7 +84,7 @@ updated and patched in a controlled way.
 manages a **fleet** of servers. Project 4 can monitor these VMs (they run
 node_exporter), and project 5 uses the same Ansible approach to deploy.
 
-## 3. Architecture
+## Architecture
 
 ```
                          Host machine (your laptop)
@@ -102,7 +105,7 @@ node_exporter), and project 5 uses the same Ansible approach to deploy.
      └────────────────────────────────────────────────────────────────────┘
 ```
 
-## 4. What gets configured
+## What gets configured
 
 | Role | Applied to | Configures |
 |---|---|---|
@@ -111,7 +114,7 @@ node_exporter), and project 5 uses the same Ansible approach to deploy.
 | `webapp` | webservers | Dedicated system user, app code, env file, **sandboxed systemd unit** (`ProtectSystem=strict`, `NoNewPrivileges`), health check and version verification after deploy |
 | `nginx_lb` | loadbalancers | Upstream pool **generated from the inventory**, `least_conn`, passive health checks (`max_fails`), retry on 502/503, `X-Upstream` header, `stub_status`; config validated with `nginx -t` before reload |
 
-## 5. Tools and technologies
+## Tools and technologies
 
 ### Required to run
 
@@ -150,7 +153,10 @@ About **1.5 GB** free RAM (three 512 MB VMs).
 | Monitoring agent | Prometheus node_exporter |
 | Quality / CI | ansible-lint, yamllint, `--syntax-check`, GitHub Actions |
 
-## 6. File structure
+## File structure
+
+<details>
+<summary><b>Show the full file structure</b></summary>
 
 ```
 03-ansible-infra-provisioning/
@@ -221,7 +227,9 @@ About **1.5 GB** free RAM (three 512 MB VMs).
 └── .github/workflows/ci.yml             # lint + offline tests + real run on the runner + idempotency check
 ```
 
-## 7. How to run: `run.sh`
+</details>
+
+## How to run: `run.sh`
 
 `run.sh` is the single entry point for this project and does not need
 `make`. Set `INV=...` to target another inventory, for example
@@ -250,7 +258,7 @@ About **1.5 GB** free RAM (three 512 MB VMs).
 
 From the portfolio root you can also run `./run.sh 03 <command>`.
 
-## 8. Quick start
+## Quick start
 
 ```bash
 git clone https://github.com/Mian-Basam/ansible-infra-provisioning.git
@@ -271,7 +279,7 @@ cd ansible-infra-provisioning
 Run `./run.sh provision` again: the summary shows `changed=0` on every
 host, which proves the playbooks are **idempotent**.
 
-## 9. Playbooks
+## Playbooks
 
 | Playbook | Command | Purpose |
 |---|---|---|
@@ -288,7 +296,7 @@ ansible-playbook playbooks/site.yml --tags lb            # only the load balance
 ansible-playbook playbooks/site.yml --limit web02        # only one server
 ```
 
-## 10. Zero-downtime rolling update
+## Zero-downtime rolling update
 
 ```bash
 # terminal 1: continuous traffic
@@ -310,7 +318,7 @@ For each web server, one at a time (`serial: 1`), the playbook:
 `max_fail_percentage: 0` stops the release on the first failure, so at
 most one server is affected. Terminal 1 keeps getting answers throughout.
 
-## 11. Testing and CI
+## Testing and CI
 
 `./run.sh test` runs 15 checks **without any VMs**:
 
@@ -337,7 +345,7 @@ GitHub Actions runs the same suite. It then applies the roles to the CI
 runner itself, runs them a **second time to prove idempotency**
 (`changed=0`), and sends a request through the provisioned load balancer.
 
-## 12. Bugs found by the tests
+## Bugs found by the tests
 
 These were real defects caught while writing the suite, and they show why
 testing infrastructure code matters:
@@ -348,7 +356,7 @@ testing infrastructure code matters:
 | Variable precedence: `vars_files` overrode play `vars` | Drain test silently rendered no host as `down` | Pass the value as an extra var (highest precedence); test now fails loudly |
 | `A && B` checks under `set -e` | A failing check skipped its PASS line but did not fail the suite | `check()` helper that exits non-zero on failure |
 
-## 13. Skills demonstrated
+## Skills demonstrated
 
 Ansible roles, handlers, templates (Jinja2), tags, `serial` and
 `max_fail_percentage`, delegation, idempotency · inventory-driven
@@ -357,14 +365,14 @@ sudoers, systemd sandboxing) · Nginx load balancing · Vagrant/VirtualBox
 virtualization · OS patch management · ansible-lint (production
 profile), yamllint, CI.
 
-## 14. Roadmap
+## Roadmap
 
 - [ ] Ansible Vault for secrets (SSH keys, app credentials)
 - [ ] Molecule scenarios per role
 - [ ] Second load balancer with keepalived (VRRP virtual IP)
 - [ ] Prometheus server role scraping node_exporter (see Project 4)
 
-## 15. Further documentation
+## Further documentation
 
 | Document | Contents |
 |---|---|
@@ -377,3 +385,15 @@ profile), yamllint, CI.
 ---
 
 **Author:** Basil Ahtisham · [LinkedIn](https://linkedin.com/in/mianbasil) · [GitHub](https://github.com/Mian-Basam)
+
+---
+
+<div align="center">
+
+**Built by [Mian Basam Ahmad](https://github.com/Mian-Basam)** · Software Engineer & Tech Lead
+
+[![Blog](https://img.shields.io/badge/Blog-mian--basam.github.io-222222?style=flat-square&logo=githubpages&logoColor=white)](https://mian-basam.github.io) [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/mian-basam-ahmad-68b997147/) [![GitHub](https://img.shields.io/badge/GitHub-Mian--Basam-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/Mian-Basam)
+
+<sub>If this project helped you, consider giving it a ⭐</sub>
+
+</div>
